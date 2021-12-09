@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'application.account',
     'application.comment',
     'application.posts',
+    'application.chat',
 ]
 
 MIDDLEWARE = [
@@ -51,10 +52,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'bookface.urls'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

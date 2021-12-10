@@ -27,13 +27,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    email = models.EmailField(primary_key=True)
+    username = None
+    email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
-    is_staff = models.BooleanField(default=False)
-    activation_code = models.CharField(max_length=6, blank=True)
-    name = models.CharField(max_length=50, blank=True)
-    last_name = models.CharField(max_length=50, blank=True)
-    contact_number = models.CharField(max_length=50, blank=True)
+    activation_code = models.CharField(max_length=100, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -41,13 +38,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     def __str__(self):
-        return f'{self.email}'
-
-    def has_module_perms(self, app_label):
-        return self.is_staff
-
-    def has_perm(self, perm, obj=None):
-        return self.is_staff
+        return self.email
 
     def create_activation_code(self):
         from django.utils.crypto import get_random_string
@@ -57,18 +48,13 @@ class User(AbstractBaseUser):
 
     def activate_with_code(self, activation_code):
         if self.activation_code != activation_code:
-            raise Exception('Wrong Activation Code')
+            raise Exception('Неверный код, проверь и попробуй снова')
         self.is_active = True
-        self.activation_code = ''
         self.save()
 
     def send_activation_email(self):
-        message = f"""
-        Thank you for your regisstration!
-        You activation code is:  http://localhost:8000/activate/{self.activation_code}/
-        """
-        send_mail('Account activation!',
-                  message,
-                  EMAIL_HOST_USER,
-                  [self.email, ]
-                  )
+        msg = f'''Спасибо за регистрацию,: 
+        Вот ваш код активации:
+                http://localhost:8000/auth/account/activate/{self.activation_code}/'''
+
+        send_mail('Akkaunt aktivirovan', msg, EMAIL_HOST_USER, [self.email])

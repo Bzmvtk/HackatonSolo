@@ -89,19 +89,20 @@ class ForgotPasswordSerializer(serializers.Serializer):
 
     def validate_email(self, email):
         if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError('Такой пользователь не зарегистрирован')
+            raise serializers.ValidationError('Такого пользователя не существует')
         return email
 
     def send_verification_email(self):
         email = self.validated_data.get('email')
         user = User.objects.get(email=email)
         user.create_activation_code()
+        user.save()
         send_mail(
             'Password recovery',
-            f"""Ваш код активации: http://localhost:8000/account/forgot_password_complete/{user.activation_code}""",
-                  EMAIL_HOST_USER,
-                  [user.email])
-
+            f"""Ваш код активации: http://localhost:8000/account/forgot_password_complete/{user.activation_code}/""",
+            EMAIL_HOST_USER,
+            [user.email, ]
+        )
 
 class ForgotPasswordCompleteSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -112,8 +113,9 @@ class ForgotPasswordCompleteSerializer(serializers.Serializer):
         email = attrs.get('email')
         password1 = attrs.get('password')
         password2 = attrs.get('password_confirmation')
+
         if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError('Пользователь не найден')
+            raise serializers.ValidationError('Такого пользователя не существует')
         if password1 != password2:
             raise serializers.ValidationError('Пароли не совпадают')
         return attrs
@@ -124,22 +126,3 @@ class ForgotPasswordCompleteSerializer(serializers.Serializer):
         user = User.objects.get(email=email)
         user.set_password(password)
         user.save()
-
-
-class ProfileSerializer(serializers.ModelSerializer):
-    name = serializers.CharField()
-    last_name = serializers.CharField()
-    contact_number = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ('name', 'last_name', 'contact_number')
-
-    def validate(self, data):
-        name = data.get('name')
-        last_name = data.get('last_name')
-        contact_number = data.get('contact_number')
-        data['name'] = name
-        data['last_name'] = last_name
-        data['contact_number'] = contact_number
-        return data

@@ -1,4 +1,4 @@
-from rest_framework import status, generics, permissions
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import get_object_or_404
@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
-from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ForgotPasswordSerializer, ForgotPasswordCompleteSerializer, ProfileSerializer
+from .serializers import RegisterSerializer, LoginSerializer, ChangePasswordSerializer, ForgotPasswordSerializer, ForgotPasswordCompleteSerializer
 
 User = get_user_model()
 
@@ -44,7 +44,6 @@ class LogoutView(APIView):
         Token.objects.filter(user=user).delete()
         return Response('Вы успешно вышли из аккаунта', status=status.HTTP_200_OK)
 
-
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated, ]
 
@@ -61,31 +60,14 @@ class ForgotPasswordView(APIView):
         serializer = ForgotPasswordSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.send_verification_email()
-            return Response('Вам выслано сообщение для восстановления')
+            return Response("На вашу почту было выслано письмо")
 
 
 class ForgotPasswordCompleteView(APIView):
     def post(self, request, verification_code):
         user = User.objects.get(activation_code=verification_code)
-        user.activate_with_code(verification_code)
+        user.activate_with_code(activation_code=verification_code)
         serializer = ForgotPasswordCompleteSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.set_new_password()
-            return Response('Пароль успешно обновлён')
-
-
-class ProfileView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = ProfileSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.name = request.data.get("name")
-        instance.save()
-
-        serializer = self.get_serializer(instance, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        return Response(serializer.data)
+            return Response('Ваш пароль изменен!')

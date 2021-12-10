@@ -1,16 +1,20 @@
-from bookface.celery import app
+from celery import shared_task
+from django.core.mail import send_mail
 
 
-@app.task
-def add(x, y):
-    return x + y
+@shared_task
+def send_activation_mail(email, activation_code):
+    activation_url = f'http://localhost:8000/account/activate/{activation_code}/'
+    message = f'''
+    Спасибо за регистрацию!
+    Пожалуйста активируйте ваш аккаунт.
+    Активационная ссылка: {activation_url}
+    '''
 
-
-@app.task
-def mul(x, y):
-    return x * y
-
-
-@app.task
-def xsum(numbers):
-    return sum(numbers)
+    send_mail(
+        'Activate your account',
+        message,
+        'test@stack_overflow.kg',
+        [email, ],
+        fail_silently=False
+    )

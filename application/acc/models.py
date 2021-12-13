@@ -7,7 +7,7 @@ from bookface.settings import EMAIL_HOST_USER
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, email, password, *args, **kwargs):
+    def create_user(self, email, password=None, *args, **kwargs):
         email = self.normalize_email(email)
         user = self.model(email=email)
         user.set_password(password)
@@ -27,9 +27,10 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser):
-    username = None
+    username = models.CharField(max_length=100, blank=True)
     email = models.EmailField(unique=True)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
     activation_code = models.CharField(max_length=100, blank=True)
 
     USERNAME_FIELD = 'email'
@@ -39,6 +40,12 @@ class User(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+    def has_module_perms(self, app_label):
+        return self.is_staff
+
+    def has_perm(self, perm, obj=None):
+        return self.is_staff
 
     def create_activation_code(self):
         from django.utils.crypto import get_random_string

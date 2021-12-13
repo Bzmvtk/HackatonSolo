@@ -35,10 +35,17 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     # custom apps
-    'application.account',
+    'application.acc',
     'application.comment',
     'application.posts',
     'application.chat',
+
+    # auth
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +135,7 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-AUTH_USER_MODEL = 'account.User'
+AUTH_USER_MODEL = 'acc.User'
 
 # email_settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -163,3 +170,27 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Bishkek'
 REDIS_HOST = 'localhost'
 REDIS_PORT = '6379'
+
+
+# auth
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+
+SITE_ID = 3
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 import django_filters
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-
 from .permissions import IsPostAuthor
 from .serializer import *
 from .models import SomePosts, Saved
